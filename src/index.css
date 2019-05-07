@@ -12,3 +12,9 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+.floatRight{float:right;}
+.width100{width: 100%}
+.eror-block{color:#990000}
+.text-center{text-align: center}
+.white{color:white}

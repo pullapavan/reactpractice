@@ -1,6 +1,20 @@
 .App {
   text-align: center;
 }
+/* div#auto {
+  display: none;
+}
+#autoForm:active + div#auto {
+  
+  display: block !important;
+
+}
+
+#autoForm:focus + div#auto {
+  
+  display: block !important;
+
+} */
 
 .App-logo {
   animation: App-logo-spin infinite 20s linear;
