@@ -8,23 +8,31 @@ class Weather extends React.Component {
         this.state = {
             data:{}
         };
-        this.userData = {};
+        
     } 
-    componentWillReceiveProps(props){
+    componentDidMount(){
         const newprops = this.props.child
-        const code = newprops.match.params.day;  
-        console.log(newprops);  
+        const code = newprops.match.params.day;
+        if(code !== undefined){
+            this.getData(code);
+            return;
+        }
+        this.showData =false;        
+        
+    }
+    componentWillReceiveProps(propsnew){
+        const newprops = propsnew.child
+        const code = newprops.match.params.day;
+        this.getData(code);
+    }
+    getData = (code)=>{
+        this.showData =true;      
         Axios.get("https://jsonplaceholder.typicode.com/users/"+code).then(result => {this.setState({data:result.data})}).catch(function (errorobject) {
             console.log(errorobject);
-        });
-    } 
-    // getData = ()=>{        
-    //     const newprops = this.props.child
-    //     const code = newprops.match.params.day;       
-    //     Axios.get("https://jsonplaceholder.typicode.com/users/"+code).then(result => {this.setState({data:result.data})}).catch(function (errorobject) {
-    //         console.log(errorobject);
-    //     });
-    // }
+        }); 
+
+    }
+    
     render() {   
        const {data} = this.state;
        const { child } = this.props;
@@ -35,7 +43,7 @@ class Weather extends React.Component {
                 </Row>
                 <hr/>
                 <Row>
-                    <Col>
+                    <Col xs={2}>
                         <Row><Col><Button variant="outline-info" onClick={() => { child.history.push('/weather/1')}}>User1</Button></Col></Row><br />
                         <Row><Col><Button variant="outline-info" onClick={() => { child.history.push('/weather/2')}}>User2</Button></Col></Row><br />
                         <Row><Col><Button variant="outline-info" onClick={() => { child.history.push('/weather/3')}}>User3</Button></Col></Row><br />
@@ -43,7 +51,28 @@ class Weather extends React.Component {
                         <Row><Col><Button variant="outline-info" onClick={() => { child.history.push('/weather/5')}}>User5</Button></Col></Row><br />
                     </Col>
                     <Col className="text-left">
-                       {data.id}
+                    {this.showData && 
+                       <table className="table table-stripped">
+                         <tbody>
+                           <tr>
+                               <th>ID</th>
+                               <td>{data.id}</td>
+                           </tr>
+                           <tr>
+                               <th>Name</th>
+                               <td>{data.name}</td>
+                           </tr>
+                           <tr>
+                               <th>email</th>
+                               <td>{data.email}</td>
+                           </tr>
+                           <tr>
+                               <th>phone</th>
+                               <td>{data.phone}</td>
+                           </tr>
+                           </tbody>
+                       </table>
+                    }
                     </Col>
                 </Row>
             </div>
