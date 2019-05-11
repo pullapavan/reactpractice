@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container} from 'react-bootstrap';
 import './App.css';
 import AddTask from './taskmanager/addtask';
 import Counter from './counter-store/counter'
@@ -12,6 +12,7 @@ import { connect } from 'react-redux';
 import { authenticate } from './Hoc/aunthenticate';
 import FetchJson from './httpclient/httpdemo';
 import weather from './nestedrouting/weather';
+import Teams from './createteam/createteam';
 
 
 class App extends Component {
@@ -37,6 +38,7 @@ class App extends Component {
                 <Route path='/test' component={authenticate(Testing)} />
                 <Route path='/http' component={authenticate(FetchJson)}/>
                 <Route path='/weather/:day?' component={authenticate(weather)}/>
+                <Route path='/createteam' component={Teams}/>
                 <Route path='/login' component={Login} />
                 <Route path ='/logout' component={Login}/>
                 <Route path='**' component={NotFound} />

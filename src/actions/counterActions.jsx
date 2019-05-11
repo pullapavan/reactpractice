@@ -11,6 +11,36 @@ export const refresh = () => {
     return { type: "R" }
 
 }
+export const ta = (name)=>{
+    return {
+        type : "TA", name
+    }
+}
+export const tb = (name)=>{
+    return{
+        type : "TB", name
+    }
+}
+export const addToMainList = (name)=>{
+    return {
+        type : "AP", name
+    }
+}
+export const removeFromList = (name)=>{
+    return{
+        type : "RP", name
+    }
+}
+export const removeFromTa = (name)=>{
+    return{
+        type : "RTA", name
+    }
+}
+export const removeFromTb = (name)=>{
+    return{
+        type : "RTB", name
+    }
+}
 export const addTask = (task) => {
     return {
         type: ADD,
