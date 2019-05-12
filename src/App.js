@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import { Container} from 'react-bootstrap';
+import { Container, Row } from 'react-bootstrap';
 import './App.css';
 import AddTask from './taskmanager/addtask';
 import Counter from './counter-store/counter'
 import CustomHeader from './header/header';
-import { Route, Switch} from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 import Login from './login/login';
 import Testing from './testing/testing';
 import NotFound from './error';
@@ -24,28 +24,30 @@ class App extends Component {
     //Access local Storage to check login Attribute is there or not.
   }
   render() {
-    
+
     return (
       <div>
         <CustomHeader /><br />
-        <Container>
-          {/* <Row >
+        {/* <Container> */}
+        {/* <Row >
             <Col> */}
-              <Switch>
-                <Route exact path='/' component={authenticate(AddTask)} />
-                <Route path='/addtask' component={authenticate(AddTask)} />
-                <Route path='/counterstore' component={authenticate(Counter)} />
-                <Route path='/test' component={authenticate(Testing)} />
-                <Route path='/http' component={authenticate(FetchJson)}/>
-                <Route path='/weather/:day?' component={authenticate(weather)}/>
-                <Route path='/createteam' component={Teams}/>
-                <Route path='/login' component={Login} />
-                <Route path ='/logout' component={Login}/>
-                <Route path='**' component={NotFound} />
-              </Switch>
-            {/* </Col>
+        <div style={{padding:'15px'}}>
+          <Switch>
+            <Route exact path='/' component={authenticate(AddTask)} />
+            <Route path='/addtask' component={authenticate(AddTask)} />
+            <Route path='/counterstore' component={authenticate(Counter)} />
+            <Route path='/test' component={authenticate(Testing)} />
+            <Route path='/http' component={authenticate(FetchJson)} />
+            <Route path='/weather/:day?' component={authenticate(weather)} />
+            <Route path='/createteam' component={Teams} />
+            <Route path='/login' component={Login} />
+            <Route path='/logout' component={Login} />
+            <Route path='**' component={NotFound} />
+          </Switch>
+        </div>
+        {/* </Col>
           </Row> */}
-        </Container>
+        {/* </Container> */}
       </div>
     );
   }

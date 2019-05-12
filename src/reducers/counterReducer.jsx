@@ -18,7 +18,7 @@ export function loginReducer(state = {}, action) {
 }
 
 export function playerReducer(state = {
-    players: ['a', 'b', 'c'], ta: [], tb: [], processingPlayers: ['a', 'b', 'c']
+    players: ['a', 'b', 'c','d','e'], ta: [], tb: [], processingPlayers: ['a', 'b', 'c','d','e']
 }, action) {
     switch (action.type) {
         case "TA": var ta = [...state.ta];
@@ -93,7 +93,9 @@ export function taskReducer(state = [], action) {
     switch (action.type) {
         case ADD: return [...state, action.task];
         case REMOVE:
-            return [...state.splice(0, action.index), ...state.splice(action.index)];
+            var dummy = [...state]
+            dummy.splice(action.index,1);
+            return [...dummy];
         case REMOVE_ALL: return [];
         default: return state;
     }
