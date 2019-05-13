@@ -24,16 +24,16 @@ export function playerReducer(state = {
         case "TA": var ta = [...state.ta];
             if (ta.length < 6) {
                 ta = [...ta, action.name];
-                return { ...state, ta };
+                return { ...state, ta ,status:'Y'};
             }
-            return { ...state };
+            return { ...state,status:'N' };
 
         case "TB": var tb = [...state.tb];
             if (tb.length < 6) {
                 tb = [...tb, action.name];
-                return { ...state, tb };
+                return { ...state, tb,status:'Y' };
             }
-            return { ...state };
+            return { ...state,status:'N' };
 
         case "RP": var processingPlayers = [...state.processingPlayers];
             var index = processingPlayers.indexOf(action.name);
