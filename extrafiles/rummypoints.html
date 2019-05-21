@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.8/angular.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.8/angular-sanitize.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.8/angular-cookies.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+
+        <!-- jQuery library -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+
+        <!-- Latest compiled JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+        <script>
+            var app = angular.module('points', []);
+            var pointsCtrl = function ($scope) {
+                var vm = this;
+                vm.check = "checkfgdg";
+                vm.game = 'rummy';
+                vm.gameObject = {
+                    rummy: {
+                        imageUrl: '',
+                        header: 'Play Rummy for Fun'
+                    },
+                    uno: {
+                        imageUrl: '',
+                        header: 'Uno'
+                    }
+                };
+                vm.imageUrl = vm.gameObject[vm.game].imageUrl;
+                vm.header = vm.gameObject[vm.game].header;
+                vm.players = [];
+                vm.rounds = [1];
+
+                function playerConstructor(name) {
+                    return name;
+                }
+
+                vm.addNewPlayer = function () {
+                    if (vm.playerName && vm.playerName.trim()) {
+                        vm.players.push({playerName: vm.playerName, 1: {score: 0, editScore: true}});
+                        vm.playerName = '';
+                    }
+                };
+                vm.addNewRound = function (round) {
+                    vm.showTotal = false;
+                    vm.rounds.push(round);
+                    vm.players.forEach(function (player, index) {
+                        player[round] = {score: 0, editScore: true};
+                    });
+                };
+                vm.makeScoreEditable = function (round) {
+                    vm.showTotal = false;
+                    vm.players.forEach(function (player, index) {
+                        player[round].editScore = true;
+                    });
+                };
+                vm.makeScoreNonEditable = function (round) {
+                    vm.showTotal = false;
+                    vm.players.forEach(function (player, index) {
+                        player[round].editScore = false;
+                    });
+                };
+                vm.displayScores = function () {
+                    vm.showTotal = true;
+                    vm.calculateScore();
+                };
+                vm.calculateScore = function () {
+                    vm.players.forEach(function (player, index) {
+                        var finalScore = 0;
+                        var i = 0;
+                        vm.rounds.forEach(function (round, index) {
+                            if (player[round]) {
+                                finalScore = finalScore + player[round].score;
+                            }
+                        });
+                        player.finalScore = finalScore;
+                    });
+                };
+                vm.showHideToatal = function () {
+                    vm.showTotal = !vm.showTotal;
+                    if (vm.showTotal) {
+                        vm.displayScores();
+                    }
+                };
+                $scope.$watch('vm.players', function () {
+                   vm.calculateScore();
+                });
+
+
+
+            };
+
+            app.controller('pointsCtrl', ['$scope', pointsCtrl]);
+        </script>
+        <style>
+            .text-center{text-align: center}
+            .text-center{text-align: left}
+            .float-left{float: left;}
+            /*body{background-image: url(images/rummy.png);opacity: 90}*/
+        </style>
+    </head>
+    <body ng-app="points" ng-controller="pointsCtrl as vm" ng-cloak>
+        <div class="container">
+            <div class="text-center"><h4>{{vm.header}}</h4></div>
+            <div>
+                <ng-form name="form">
+                    <div class="form-group">
+                        <label for="name">player Name:</label>
+                        <input type="text" ng-model="vm.playerName" name="playerName" placeholder="player name" class="form-control" id="name" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" ng-click="vm.addNewPlayer();" class="btn btn-primary" ng-disabled="form.playerName.$invalid || vm.displayScoresClicked">Add new player</button>                        
+                    </div>
+                </ng-form>
+            </div>
+            <div>
+                <table class="table table-bordered" ng-show="vm.players.length > 0">
+                    <thead>
+                        <tr ng-show="vm.rounds.length > 1">
+                            <th class="text-center"><button type="button" ng-click="vm.displayScores();" class="btn btn-warning" ng-disabled="vm.displayScoresClicked">Display Scores</button></th>                        
+                        </tr>
+                        <tr>
+                            <th ng-repeat="player in vm.players track by $index">
+                                {{player.playerName}}
+                            </th>
+                            <th>Actions</th>
+                        </tr>
+
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="round in vm.rounds track by $index">  
+                            <td ng-repeat="player in vm.players">
+                                <input type="number" class="form-control" ng-model="player[round].score" ng-disabled="!player[round].editScore"/>
+                            </td>
+                            <td>
+                                <div class="float-left">
+                                    <button type="button" class="btn btn-info" ng-click="vm.makeScoreNonEditable(round)" ng-disabled="vm.displayScoresClicked">Save</button>
+                                    <button type="button" class="btn btn-danger" ng-click="vm.makeScoreEditable(round)" ng-disabled="vm.displayScoresClicked">Edit</button>
+                                    <div style="padding-top:5px;"><button type="button" ng-show="vm.rounds.length === $index + 1" class="btn btn-success" ng-disabled="vm.displayScoresClicked" ng-click="vm.addNewRound(round + 1);">Add new Round</button></div>                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr ng-show="vm.showTotal">
+                            <td ng-repeat="player in vm.players">{{player.finalScore}}</td>
+                            <td><button type="button" class="btn btn-primary" ng-click="vm.showHideToatal()">Hide Total Scores</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>            
+        </div>
+    </body>
+</html>
