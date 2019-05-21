@@ -48,27 +48,41 @@ and open the template in the editor.
 
                 vm.addNewPlayer = function () {
                     if (vm.playerName && vm.playerName.trim()) {
-                        vm.players.push({playerName: vm.playerName, 1: {score: 0, editScore: true}});
+                        vm.players.push({playerName: vm.playerName, 1: {score: 0, editScore: true, valid: true}});
                         vm.playerName = '';
                     }
+                    if (vm.rounds.length > 1) {
+                        vm.rounds.forEach(function (round, index) {
+                            var object = vm.players[vm.players.length - 1];
+                            object[round] = {score: 0, editScore: false, valid: false};
+                            vm.players[vm.players.length - 1] = object;
+
+                        });
+                        return;
+                    }
+
                 };
                 vm.addNewRound = function (round) {
                     vm.showTotal = false;
                     vm.rounds.push(round);
                     vm.players.forEach(function (player, index) {
-                        player[round] = {score: 0, editScore: true};
+                        player[round] = {score: 0, editScore: true, valid: true};
                     });
                 };
                 vm.makeScoreEditable = function (round) {
                     vm.showTotal = false;
                     vm.players.forEach(function (player, index) {
-                        player[round].editScore = true;
+                        if (player[round].valid) {
+                            player[round].editScore = true;
+                        }
                     });
                 };
                 vm.makeScoreNonEditable = function (round) {
                     vm.showTotal = false;
                     vm.players.forEach(function (player, index) {
-                        player[round].editScore = false;
+                        if (player[round].valid) {
+                            player[round].editScore = false;
+                        }
                     });
                 };
                 vm.displayScores = function () {
@@ -80,7 +94,7 @@ and open the template in the editor.
                         var finalScore = 0;
                         var i = 0;
                         vm.rounds.forEach(function (round, index) {
-                            if (player[round]) {
+                            if (player[round].valid) {
                                 finalScore = finalScore + player[round].score;
                             }
                         });
@@ -94,8 +108,14 @@ and open the template in the editor.
                     }
                 };
                 $scope.$watch('vm.players', function () {
-                   vm.calculateScore();
+                    vm.calculateScore();
                 });
+                vm.removePlayer = function (index) {
+                    vm.players.splice(index, 1);
+                    if (vm.player.length === 0) {
+                        window.location.realod();
+                    }
+                };
 
 
 
@@ -116,7 +136,7 @@ and open the template in the editor.
             <div>
                 <ng-form name="form">
                     <div class="form-group">
-                        <label for="name">player Name:</label>
+                        <label for="name">Enter player Name:</label>
                         <input type="text" ng-model="vm.playerName" name="playerName" placeholder="player name" class="form-control" id="name" required>
                     </div>
                     <div class="form-group">
@@ -125,14 +145,15 @@ and open the template in the editor.
                 </ng-form>
             </div>
             <div>
-                <table class="table table-bordered" ng-show="vm.players.length > 0">
+                <table class="table table-bordered table-hover" ng-show="vm.players.length > 0">
                     <thead>
                         <tr ng-show="vm.rounds.length > 1">
-                            <th class="text-center"><button type="button" ng-click="vm.displayScores();" class="btn btn-warning" ng-disabled="vm.displayScoresClicked">Display Scores</button></th>                        
+                            <th class="text-center"><button type="button" ng-click="vm.displayScores();" class="btn btn-xs btn-warning" ng-disabled="vm.displayScoresClicked">Display Scores</button></th>                        
                         </tr>
                         <tr>
+                            <th>Round Number</th>
                             <th ng-repeat="player in vm.players track by $index">
-                                {{player.playerName}}
+                                <div>{{player.playerName}}<button style="float: right;padding: 3px;"type="button" class="btn btn-danger" ng-click="vm.removePlayer($index);">X</button></div>
                             </th>
                             <th>Actions</th>
                         </tr>
@@ -140,6 +161,7 @@ and open the template in the editor.
                     </thead>
                     <tbody>
                         <tr ng-repeat="round in vm.rounds track by $index">  
+                            <td>{{$index + 1}}</td>
                             <td ng-repeat="player in vm.players">
                                 <input type="number" class="form-control" ng-model="player[round].score" ng-disabled="!player[round].editScore"/>
                             </td>
@@ -152,6 +174,7 @@ and open the template in the editor.
                             </td>
                         </tr>
                         <tr ng-show="vm.showTotal">
+                            <td><b>Total Scores:</b></td>
                             <td ng-repeat="player in vm.players">{{player.finalScore}}</td>
                             <td><button type="button" class="btn btn-primary" ng-click="vm.showHideToatal()">Hide Total Scores</button></td>
                         </tr>
