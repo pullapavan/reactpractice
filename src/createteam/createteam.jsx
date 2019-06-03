@@ -108,7 +108,7 @@ class Teams extends React.Component {
         )
     }
 }
-const mapStateToProps = (state) => {
+const mapStateToProps = (state) => { 
     return {
         players: state.playerReducer.players,
         aprops: state.playerReducer.ta,

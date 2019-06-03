@@ -17,6 +17,7 @@ class CustomHeader extends React.Component {
                         <Nav.Link href="/http">AXIOS Library</Nav.Link>
                         <Nav.Link href="/weather">Nested Routing</Nav.Link>
                         <Nav.Link href="/createteam">Team selection</Nav.Link>
+                        <Nav.Link href="/ttt">socket-testing</Nav.Link>
                         <Nav.Link href="/logout" onClick={this.props.logout}>Logout</Nav.Link> 
                     </Nav>
                 }

@@ -18,7 +18,7 @@ export function loginReducer(state = {}, action) {
 }
 
 export function playerReducer(state = {
-    players: ['a', 'b', 'c','d','e'], ta: [], tb: [], processingPlayers: ['a', 'b', 'c','d','e']
+    players: [], ta: [], tb: [], processingPlayers: []
 }, action) {
     switch (action.type) {
         case "TA": var ta = [...state.ta];

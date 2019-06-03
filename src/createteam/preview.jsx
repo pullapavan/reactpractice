@@ -2,11 +2,23 @@ import React from 'react';
 // import { connect } from 'redux';
 import { Card, ListGroup, ListGroupItem, Button } from 'react-bootstrap';
 import backgroung from '../images/backgroung.png';
+import pavan from '../images/pavan.png'
+import reddy from '../images/reddy.png'
 
 class Preview extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {}
+        this.state = {
+            images:{}
+        }
+    }
+    componentDidMount(){
+        const images = [];
+        this.props.teamList.map((player)=>{
+          images[player] = "../images/"+player+".png";
+        })
+        this.setState({images})
+        console.log(this.state.images)
     }
     render() {
         const { teamList } = this.props;
@@ -21,7 +33,7 @@ class Preview extends React.Component {
                             {teamList.length > 0 &&
                                 teamList.map((name, index) => {
                                     return <td><Card key={index} style={{ width: '8em' }}>
-                                        <Card.Img variant="top" src={backgroung} />
+                                        <Card.Img variant="top" src={`/images/${name}.png`}/>
                                         <Card.Body style={{ height: '4em' }}>
                                             <Card.Title>{name}</Card.Title>
                                         </Card.Body>

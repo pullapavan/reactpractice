@@ -13,6 +13,7 @@ import { authenticate } from './Hoc/aunthenticate';
 import FetchJson from './httpclient/httpdemo';
 import weather from './nestedrouting/weather';
 import Teams from './createteam/createteam';
+import TTT from './socket-practice/socket-practice';
 
 
 class App extends Component {
@@ -40,6 +41,7 @@ class App extends Component {
             <Route path='/http' component={authenticate(FetchJson)} />
             <Route path='/weather/:day?' component={authenticate(weather)} />
             <Route path='/createteam' component={Teams} />
+            <Route path='/ttt' component={TTT} />
             <Route path='/login' component={Login} />
             <Route path='/logout' component={Login} />
             <Route path='**' component={NotFound} />
