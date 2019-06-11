@@ -20,7 +20,7 @@ class TTT extends React.Component {
       opponentClientName: '',
       opponentClientId: '',
       socket: {},
-      serverUrl: 'http://10.0.11.8:3001/',
+      serverUrl: 'http://192.168.1.4:3001/',
       lobbyPlayers: {},
       requestReceived: false,
       requestedPlayerName: "",
@@ -74,22 +74,22 @@ class TTT extends React.Component {
     socket.on('new-room', (data) => {
       const { roomName } = data
       this.setState((previousState) => {
-        var returnObj = { rooms: [...previousState.rooms, data.roomName], roomMessages: { ...previousState.roomMessages } };
-        returnObj.roomMessages[roomName] = []
-        returnObj[roomName] = "sample Message"      
-        console.log(returnObj)    
+        var returnObj = { rooms: [...previousState.rooms, data.roomName]};        
+        returnObj[roomName] = "sample Message"    
+        returnObj[roomName+"_messages"] = []
         return returnObj
       })
-      console.log("State object")
-      console.log(this.state.roomMesssages)
+      
     })
     socket.on('new-room-msg', (data) => {
       console.log("Inside new-room-message")
       const {roomName} = data;
       var msgObject = { message: data.message, clientName: data.clientName,roomName}
       this.setState((previousState)=>{
-        var returnObject = {roomMessages: { ...previousState.roomMessages }}
-        returnObject.roomMessages[roomName].push(msgObject)
+        var returnObject = {}   
+        var msgArray = returnObject[roomName+"_messages"] = previousState[roomName+"_messages"]        
+        msgArray.push(msgObject)  
+          
         return returnObject;
       })
     })
@@ -131,6 +131,11 @@ class TTT extends React.Component {
     console.log("Inside Sending Mesage")
     const { socket } = this.state
     socket.emit('room-message',{roomName,clientName,message:this.state[roomName]});
+    this.setState(()=>{
+      var returnObj = {}
+      returnObj[roomName] = "";
+      return returnObj
+    })
   }
   handleMessageChange = (context,roomName)=>{
     let object = {}
@@ -159,7 +164,7 @@ class TTT extends React.Component {
 
           {this.state.enteredLobby &&
             <>
-              <h3>You have entered Game Lobby with name {this.state.clientName}</h3>
+              <h3>Your Identification name is{this.state.clientName}</h3>
               {lobbyPlayers &&
                 <ListGroup>
                   {
@@ -167,7 +172,7 @@ class TTT extends React.Component {
                       return <ListGroup.Item key={index}>
                         <div>
                           <div className="float-left">{lobbyPlayers[key].clientName}</div>
-                          <div className="float-right"><Button disabled={lobbyPlayers[key].clientName === this.state.clientName} variant="info" onClick={() => { this.sendInvite(key) }}>Send Invite</Button></div>
+                          <div className="float-right"><Button disabled={lobbyPlayers[key].clientName === this.state.clientName} variant="outline-primary" onClick={() => { this.sendInvite(key) }}>Send Invite</Button></div>
                         </div>
                       </ListGroup.Item>
                     })
@@ -201,26 +206,26 @@ class TTT extends React.Component {
             </Button>
             </Modal.Footer>
           </Modal>
-
-          {/* Start of Room Chats */}
+          
+          {<br></br>/* Start of Room Chats */}
           {
             rooms && <Row>
               {
                 rooms.map((roomName, index) => {
                   return <Col key={index}>
                     <table className="table table-bordered">
-                      <thead>
-                        <tr><th>{roomName}</th></tr>
+                      <thead className='ash-background'>
+                        <tr><th><h4>{roomName}</h4></th></tr>
                       </thead>
                       <tbody>
-                        { this.state["roomMesssages"].roomName &&
+                        { this.state[roomName+"_messages"] &&
                           
-                          this.state["roomMesssages"].roomName.map((msgObject, index) => {
+                          this.state[roomName+"_messages"].map((msgObject, index) => {
 
                             if (msgObject.clientName === this.state.clientName) {
-                              className = "float-right"
+                              className = "float-right yellow-border"
                             } else {
-                              className = "float-left"
+                              className = "float-left yellow-border"
                             }
                             return <tr>
                               <td className={className}>

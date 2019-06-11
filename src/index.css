@@ -19,3 +19,13 @@ code {
 .text-center{text-align: center}
 .white{color:white}
 .commondp{width: 243px;height: 160px;}
+.yellow-border{border: 1px solid #e3e65a;
+  border-radius: 25px;
+  background: #e3e65a;
+  padding: 10px;}
+.yellow-border{border: 1px solid #e3e65a;
+    border-radius: 25px;
+    background: #e3e65a;
+    padding: 10px;}
+td{border:0}    
+.ash-background{background-color:#d1d4d65c}
