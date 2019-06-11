@@ -1,8 +1,6 @@
 import React from 'react'
 import socketIOClient from 'socket.io-client'
-import { playerReducer } from '../reducers/counterReducer';
-import LobbyPlayers from './lobbyplayers';
-import { ListGroup, Button } from 'react-bootstrap'
+import { ListGroup, Button, Modal, Row, Col } from 'react-bootstrap'
 
 class TTT extends React.Component {
   constructor(props) {
@@ -22,8 +20,15 @@ class TTT extends React.Component {
       opponentClientName: '',
       opponentClientId: '',
       socket: {},
-      serverUrl: 'http://localhost:3000/',
-      lobbyPlayers: {}
+      serverUrl: 'http://10.0.11.8:3001/',
+      lobbyPlayers: {},
+      requestReceived: false,
+      requestedPlayerName: "",
+      errorAck: false,
+      errorMsg: "",
+      rooms: [],
+      roomMesssages: {},
+      myRoomMessages: {}
     }
   }
   clientNameChange = (event) => {
@@ -50,16 +55,96 @@ class TTT extends React.Component {
     socket.on('lobby-players-list', (data) => {
       this.setState({ lobbyPlayers: data })
     });
+    socket.on('new-invite', (data) => {
+      if (!this.state.requestReceived) {
+        const acceptSocketId = data.socketId
+        let requestedPLayerDetails = this.state.lobbyPlayers[acceptSocketId];
+        this.setState({ requestReceived: true, requestedPlayerName: requestedPLayerDetails.clientName, requestedSocketId: acceptSocketId })
+      } else {
+        socket.emit('error-ack', { opponentSocketId: data.socketId, msg: "Player busy please try After Some" });
+      }
+    });
+    socket.on('error-ack', (message) => {
+      this.setState({ errorAck: true, errorMsg: message })
+    })
+    socket.on('player-accepted-room', (data) => {
+      console.log(`player-accepted-room event with data ${data}`)
+      socket.emit('join-opponent-accepted-room', data)
+    });
+    socket.on('new-room', (data) => {
+      const { roomName } = data
+      this.setState((previousState) => {
+        var returnObj = { rooms: [...previousState.rooms, data.roomName], roomMessages: { ...previousState.roomMessages } };
+        returnObj.roomMessages[roomName] = []
+        returnObj[roomName] = "sample Message"      
+        console.log(returnObj)    
+        return returnObj
+      })
+      console.log("State object")
+      console.log(this.state.roomMesssages)
+    })
+    socket.on('new-room-msg', (data) => {
+      console.log("Inside new-room-message")
+      const {roomName} = data;
+      var msgObject = { message: data.message, clientName: data.clientName,roomName}
+      this.setState((previousState)=>{
+        var returnObject = {roomMessages: { ...previousState.roomMessages }}
+        returnObject.roomMessages[roomName].push(msgObject)
+        return returnObject;
+      })
+    })
+
+
   }
-  sendInvite = (socketId)=>{
-    // const {socket} = this.state;
-    // socket.emit('send-invite',{
-    //     socketId
-    // });
+  sendInvite = (opponentSocketId) => {
+    const { socket } = this.state;
+    socket.emit('send-invite', {
+      opponentSocketId
+    });
+  }
+  closeErrorAck = () => {
+    this.setState({ errorAck: false, errorMsg: "" })
+  }
+  removeRequestModal = () => {
+    this.setState({
+      requestReceived: false,
+      requestedPlayerName: "",
+      requestedSocketId: ""
+    })
+  }
+  requestRejected = () => {
+    const { socket } = this.state;
+    socket.emit('error-ack', {
+      opponentSocketId: this.state.requestedSocketId,
+      msg: `${this.state.clientName} has rejected your Request`
+    })
+    this.removeRequestModal();
+  }
+  acceptPlayerInvitation = () => {
+    const { socket } = this.state
+    console.log(`${this.state.requestedSocketId} opponent socket id Accepting Request`)
+    socket.emit('Accept', { opponentSocketId: this.state.requestedSocketId })
+    this.removeRequestModal();
+  }
+
+  sendMessage = (roomName,clientName) => {
+    console.log("Inside Sending Mesage")
+    const { socket } = this.state
+    socket.emit('room-message',{roomName,clientName,message:this.state[roomName]});
+  }
+  handleMessageChange = (context,roomName)=>{
+    let object = {}
+    object[roomName] = context.target.value
+    this.setState(
+      object
+    )
   }
 
   render() {
     const { lobbyPlayers } = this.state;
+    const { rooms } = this.state;
+    
+    let className = "";
     return (
       <>
         <div className="container text-center">
@@ -82,7 +167,7 @@ class TTT extends React.Component {
                       return <ListGroup.Item key={index}>
                         <div>
                           <div className="float-left">{lobbyPlayers[key].clientName}</div>
-                          <div className="float-right"><Button disabled={lobbyPlayers[key].clientName === this.state.clientName} variant="info" onClick={this.sendInvite(key)}>Send Invite</Button></div>                          
+                          <div className="float-right"><Button disabled={lobbyPlayers[key].clientName === this.state.clientName} variant="info" onClick={() => { this.sendInvite(key) }}>Send Invite</Button></div>
                         </div>
                       </ListGroup.Item>
                     })
@@ -90,6 +175,77 @@ class TTT extends React.Component {
                 </ListGroup>
               }
             </>
+          }
+          <Modal show={this.state.requestReceived} onHide={this.requestRejected}>
+            <Modal.Header closeButton>
+              <Modal.Title>Player Invite</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>{this.state.requestedPlayerName} sent you Request</Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={this.acceptPlayerInvitation}>
+                Accept
+            </Button>
+              <Button variant="primary" onClick={this.requestRejected}>
+                Reject
+            </Button>
+            </Modal.Footer>
+          </Modal>
+          <Modal show={this.state.errorAck} onHide={this.closeErrorAck}>
+            <Modal.Header closeButton>
+              <Modal.Title>Acknowledgement</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>{this.state.errorMsg}</Modal.Body>
+            <Modal.Footer>
+              <Button variant="primary" onClick={this.closeErrorAck}>
+                OK
+            </Button>
+            </Modal.Footer>
+          </Modal>
+
+          {/* Start of Room Chats */}
+          {
+            rooms && <Row>
+              {
+                rooms.map((roomName, index) => {
+                  return <Col key={index}>
+                    <table className="table table-bordered">
+                      <thead>
+                        <tr><th>{roomName}</th></tr>
+                      </thead>
+                      <tbody>
+                        { this.state["roomMesssages"].roomName &&
+                          
+                          this.state["roomMesssages"].roomName.map((msgObject, index) => {
+
+                            if (msgObject.clientName === this.state.clientName) {
+                              className = "float-right"
+                            } else {
+                              className = "float-left"
+                            }
+                            return <tr>
+                              <td className={className}>
+                                {msgObject.message}
+                              </td>
+                            </tr>
+                          })
+                        }
+                        <tr>
+                          <td>
+                            <form className="form-inline">
+                              <div className="form-group">                              
+                                <input type="text" value={this.state[roomName]} onChange={(event)=>{this.handleMessageChange(event,roomName)}}  className="form-control"  placeholder="message" />
+                              </div>
+                              <button type="button" onClick={()=>this.sendMessage(roomName, this.state.clientName)}  className="btn btn-default">&#9654;</button>
+                            </form>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                  </Col>
+                })
+              }
+            </Row>
           }
 
         </div>
