@@ -20,7 +20,7 @@ class TTT extends React.Component {
       opponentClientName: '',
       opponentClientId: '',
       socket: {},
-      serverUrl: 'http://192.168.1.4:3001/',
+      serverUrl: 'http://10.0.11.8:3001/',
       lobbyPlayers: {},
       requestReceived: false,
       requestedPlayerName: "",
@@ -40,21 +40,24 @@ class TTT extends React.Component {
   }
   enterGameLobby = () => {
     let socket = socketIOClient(this.state.serverUrl);
-    console.log(socket)
     this.setState({ socket })
     this.registerForServerSentEvent(socket);
   }
   registerForServerSentEvent = (socket) => {
+
     socket.on('server-requires-client-name', (data) => {
       socket.emit('client-name', { clientName: this.state.clientName });
     })
+
     socket.on('client-name-ack', (received) => {
       console.log("Ack received for client name %s", received)
       this.setState({ enteredLobby: received })
     });
+
     socket.on('lobby-players-list', (data) => {
       this.setState({ lobbyPlayers: data })
     });
+
     socket.on('new-invite', (data) => {
       if (!this.state.requestReceived) {
         const acceptSocketId = data.socketId
@@ -64,47 +67,49 @@ class TTT extends React.Component {
         socket.emit('error-ack', { opponentSocketId: data.socketId, msg: "Player busy please try After Some" });
       }
     });
+
     socket.on('error-ack', (message) => {
       this.setState({ errorAck: true, errorMsg: message })
-    })
+    });
+
     socket.on('player-accepted-room', (data) => {
-      console.log(`player-accepted-room event with data ${data}`)
       socket.emit('join-opponent-accepted-room', data)
     });
+
     socket.on('new-room', (data) => {
       const { roomName } = data
       this.setState((previousState) => {
-        var returnObj = { rooms: [...previousState.rooms, data.roomName]};        
-        returnObj[roomName] = "sample Message"    
-        returnObj[roomName+"_messages"] = []
+        var returnObj = { rooms: [...previousState.rooms, data.roomName] };
+        returnObj[roomName] = "sample Message"
+        returnObj[roomName + "_messages"] = []
         return returnObj
-      })
-      
-    })
+      });
+    });
+
     socket.on('new-room-msg', (data) => {
-      console.log("Inside new-room-message")
-      const {roomName} = data;
-      var msgObject = { message: data.message, clientName: data.clientName,roomName}
-      this.setState((previousState)=>{
-        var returnObject = {}   
-        var msgArray = returnObject[roomName+"_messages"] = previousState[roomName+"_messages"]        
-        msgArray.push(msgObject)  
-          
+      const { roomName } = data;
+      var msgObject = { message: data.message, clientName: data.clientName, roomName }
+      this.setState((previousState) => {
+        var returnObject = {}
+        var msgArray = returnObject[roomName + "_messages"] = previousState[roomName + "_messages"]
+        msgArray.push(msgObject)
         return returnObject;
-      })
+      });
     })
-
-
+    
   }
+
   sendInvite = (opponentSocketId) => {
     const { socket } = this.state;
     socket.emit('send-invite', {
       opponentSocketId
     });
   }
+
   closeErrorAck = () => {
     this.setState({ errorAck: false, errorMsg: "" })
   }
+
   removeRequestModal = () => {
     this.setState({
       requestReceived: false,
@@ -112,6 +117,7 @@ class TTT extends React.Component {
       requestedSocketId: ""
     })
   }
+
   requestRejected = () => {
     const { socket } = this.state;
     socket.emit('error-ack', {
@@ -120,6 +126,7 @@ class TTT extends React.Component {
     })
     this.removeRequestModal();
   }
+
   acceptPlayerInvitation = () => {
     const { socket } = this.state
     console.log(`${this.state.requestedSocketId} opponent socket id Accepting Request`)
@@ -127,17 +134,17 @@ class TTT extends React.Component {
     this.removeRequestModal();
   }
 
-  sendMessage = (roomName,clientName) => {
-    console.log("Inside Sending Mesage")
+  sendMessage = (roomName, clientName) => {
     const { socket } = this.state
-    socket.emit('room-message',{roomName,clientName,message:this.state[roomName]});
-    this.setState(()=>{
+    socket.emit('room-message', { roomName, clientName, message: this.state[roomName] });
+    this.setState(() => {
       var returnObj = {}
       returnObj[roomName] = "";
       return returnObj
     })
   }
-  handleMessageChange = (context,roomName)=>{
+
+  handleMessageChange = (context, roomName) => {
     let object = {}
     object[roomName] = context.target.value
     this.setState(
@@ -148,10 +155,9 @@ class TTT extends React.Component {
   render() {
     const { lobbyPlayers } = this.state;
     const { rooms } = this.state;
-    
-    let className = "";
+    let className;
     return (
-      <>
+      <div>
         <div className="container text-center">
           {!this.state.enteredLobby &&
             <form className="form-inline">
@@ -163,7 +169,7 @@ class TTT extends React.Component {
           }
 
           {this.state.enteredLobby &&
-            <>
+            <div>
               <h3>Your Identification name is{this.state.clientName}</h3>
               {lobbyPlayers &&
                 <ListGroup>
@@ -179,7 +185,7 @@ class TTT extends React.Component {
                   }
                 </ListGroup>
               }
-            </>
+            </div>
           }
           <Modal show={this.state.requestReceived} onHide={this.requestRejected}>
             <Modal.Header closeButton>
@@ -206,7 +212,7 @@ class TTT extends React.Component {
             </Button>
             </Modal.Footer>
           </Modal>
-          
+
           {<br></br>/* Start of Room Chats */}
           {
             rooms && <Row>
@@ -218,15 +224,12 @@ class TTT extends React.Component {
                         <tr><th><h4>{roomName}</h4></th></tr>
                       </thead>
                       <tbody>
-                        { this.state[roomName+"_messages"] &&
-                          
-                          this.state[roomName+"_messages"].map((msgObject, index) => {
-
-                            if (msgObject.clientName === this.state.clientName) {
+                        {this.state[roomName + "_messages"] &&
+                          this.state[roomName + "_messages"].map((msgObject, index) => {
+                            if (msgObject.clientName === this.state.clientName) 
                               className = "float-right yellow-border"
-                            } else {
-                              className = "float-left yellow-border"
-                            }
+                            else 
+                              className = "float-left yellow-border"                            
                             return <tr>
                               <td className={className}>
                                 {msgObject.message}
@@ -237,24 +240,22 @@ class TTT extends React.Component {
                         <tr>
                           <td>
                             <form className="form-inline">
-                              <div className="form-group">                              
-                                <input type="text" value={this.state[roomName]} onChange={(event)=>{this.handleMessageChange(event,roomName)}}  className="form-control"  placeholder="message" />
+                              <div className="form-group">
+                                <input type="text" value={this.state[roomName]} onChange={(event) => { this.handleMessageChange(event, roomName) }} className="form-control" placeholder="Type here and dont hit enter button, click on send" />
                               </div>
-                              <button type="button" onClick={()=>this.sendMessage(roomName, this.state.clientName)}  className="btn btn-default">&#9654;</button>
+                              <button type="button" onClick={() => this.sendMessage(roomName, this.state.clientName)} className="btn btn-default">&#9654;</button>
                             </form>
                           </td>
                         </tr>
                       </tbody>
                     </table>
-
                   </Col>
                 })
               }
             </Row>
           }
-
         </div>
-      </>
+      </div>
     )
   }
 }
