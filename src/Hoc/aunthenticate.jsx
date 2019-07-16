@@ -22,5 +22,5 @@ export function authenticate(Component) {
             loggedIn
         }
     }
-    return connect(mapStateToProps, null)(AuthenticateComponent);
+    return connect(mapStateToProps, null)(AuthenticateComponent);    
 }
